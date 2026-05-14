@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FIT7 健身追蹤</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0d0b;
+  --header: #1a1714;
+  --card: #1e1c18;
+  --card2: #252220;
+  --lime: #C8F563;
+  --lime-dim: #9dbf3f;
+  --text: #f0ede6;
+  --text-muted: #8a847a;
+  --text-dim: #5a5550;
+  --border: #2e2b26;
+  --red: #ff5c5c;
+  --blue: #5ca0ff;
+  --orange: #ffaa44;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden;}
+#app{display:flex;flex-direction:column;height:100vh;max-width:430px;margin:0 auto;position:relative;}
+
+/* HEADER */
+.header{background:var(--header);padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--border);}
+.header-title{font-size:18px;font-weight:800;letter-spacing:-0.3px;}
+.header-title span{color:var(--lime);}
+.header-actions{display:flex;gap:8px;}
+.icon-btn{background:var(--card2);border:1px solid var(--border);color:var(--text-muted);width:34px;height:34px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;}
+.icon-btn:active{background:var(--border);transform:scale(0.93);}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:14px;padding-bottom:80px;}
+.content::-webkit-scrollbar{display:none;}
+
+/* NAV */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--header);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px 6px;cursor:pointer;gap:3px;transition:all .15s;}
+.nav-icon{font-size:20px;line-height:1;}
+.nav-label{font-size:9px;font-weight:600;color:var(--text-dim);letter-spacing:0.3px;text-transform:uppercase;}
+.nav-btn.active .nav-icon{filter:drop-shadow(0 0 6px var(--lime));}
+.nav-btn.active .nav-label{color:var(--lime);}
+
+/* PAGE */
+.page{display:none;}
+.page.active{display:block;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.card-title{font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;}
+
+/* WORKOUT SELECTOR */
+.workout-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.workout-tab{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s;}
+.workout-tab.active{background:var(--lime);border-color:var(--lime);}
+.workout-tab-num{font-size:16px;font-weight:800;color:var(--text);}
+.workout-tab.active .workout-tab-num{color:#0e0d0b;}
+.workout-tab-label{font-size:9px;color:var(--text-muted);margin-top:2px;line-height:1.2;}
+.workout-tab.active .workout-tab-label{color:#3a3a2a;}
+
+/* EXERCISE ROW */
+.exercise-item{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;}
+.exercise-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.exercise-name{font-size:14px;font-weight:700;}
+.exercise-check{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all .2s;flex-shrink:0;}
+.exercise-check.done{background:var(--lime);border-color:var(--lime);color:#0e0d0b;}
+.exercise-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.control-group{display:flex;align-items:center;gap:6px;}
+.control-label{font-size:11px;color:var(--text-muted);font-weight:600;}
+.ctrl-btn{width:28px;height:28px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .1s;flex-shrink:0;}
+.ctrl-btn:active{background:var(--lime);color:#0e0d0b;border-color:var(--lime);}
+.ctrl-val{font-size:15px;font-weight:700;min-width:36px;text-align:center;}
+.sets-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.set-pill{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+.set-pill.done{background:var(--lime);border-color:var(--lime);color:#0e0d0b;}
+.cardio-tag{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.cardio-tag-icon{font-size:18px;}
+.cardio-tag-text{font-size:13px;color:var(--text-muted);}
+.start-btn{width:100%;background:var(--lime);color:#0e0d0b;border:none;border-radius:var(--radius);padding:14px;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:12px;transition:all .15s;letter-spacing:-0.2px;}
+.start-btn:active{transform:scale(0.97);}
+.finish-btn{width:100%;background:transparent;color:var(--lime);border:2px solid var(--lime);border-radius:var(--radius);padding:12px;font-size:15px;font-weight:800;cursor:pointer;transition:all .15s;}
+.finish-btn:active{background:var(--lime);color:#0e0d0b;}
+
+/* LOG PAGE */
+.log-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+.log-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.log-type-badge{background:var(--lime);color:#0e0d0b;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px;}
+.log-time{font-size:11px;color:var(--text-muted);}
+.log-exercises{display:flex;flex-direction:column;gap:4px;}
+.log-ex-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;}
+.log-ex-name{color:var(--text-muted);}
+.log-ex-val{font-weight:700;font-size:13px;}
+.delete-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.delete-btn:active{background:var(--red);color:#fff;border-color:var(--red);}
+
+/* CHART */
+.chart-wrap{position:relative;height:160px;margin-bottom:8px;}
+canvas.chart{width:100%!important;height:160px!important;}
+.chart-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+
+/* STAT PILL */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.stat-card{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;}
+.stat-card-label{font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.stat-card-val{font-size:22px;font-weight:800;}
+.stat-card-unit{font-size:11px;color:var(--text-muted);margin-left:2px;}
+.highlight{color:var(--lime);}
+
+/* BODY INPUT */
+.body-input-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.body-input-row:last-child{border-bottom:none;}
+.body-input-label{font-size:13px;font-weight:600;color:var(--text-muted);}
+.body-input-field{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:15px;font-weight:700;width:90px;padding:6px 10px;text-align:right;}
+.body-input-field:focus{outline:none;border-color:var(--lime);}
+.add-body-btn{width:100%;background:var(--lime);color:#0e0d0b;border:none;border-radius:var(--radius);padding:12px;font-size:14px;font-weight:800;cursor:pointer;margin-top:12px;transition:all .15s;}
+.add-body-btn:active{transform:scale(0.97);}
+.body-log-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.body-log-date{color:var(--text-muted);}
+
+/* CALENDAR */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.cal-month{font-size:16px;font-weight:800;}
+.cal-nav{display:flex;gap:6px;}
+.cal-nav-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.cal-nav-btn:active{background:var(--lime);color:#0e0d0b;border-color:var(--lime);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-dow{font-size:10px;font-weight:700;color:var(--text-dim);text-align:center;padding:4px 0;}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;position:relative;}
+.cal-day.other{color:var(--text-dim);}
+.cal-day.today{background:var(--card2);border:1px solid var(--lime);}
+.cal-day.checked{background:var(--lime);color:#0e0d0b;font-weight:800;}
+.cal-day:active{transform:scale(0.88);}
+
+/* STATS */
+.period-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.period-tab{flex:1;padding:7px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;text-align:center;transition:all .15s;}
+.period-tab.active{background:var(--lime);color:#0e0d0b;border-color:var(--lime);}
+
+/* PROGRESS BAR */
+.progress-bar-wrap{background:var(--card2);border-radius:20px;height:10px;overflow:hidden;margin-top:6px;}
+.progress-bar{background:var(--lime);height:100%;border-radius:20px;transition:width .5s ease;}
+
+/* PERSONAL BEST */
+.pb-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.pb-row:last-child{border-bottom:none;}
+.pb-name{font-size:13px;font-weight:600;}
+.pb-val{font-size:14px;font-weight:800;color:var(--lime);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:430px;max-height:80vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:16px;}
+.modal-btn{width:100%;padding:13px;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;border:none;margin-bottom:8px;transition:all .15s;}
+.modal-btn:active{transform:scale(0.97);}
+.modal-btn-primary{background:var(--lime);color:#0e0d0b;}
+.modal-btn-danger{background:rgba(255,92,92,0.15);color:var(--red);border:1px solid rgba(255,92,92,0.3);}
+.modal-btn-cancel{background:var(--card2);color:var(--text-muted);border:1px solid var(--border);}
+
+/* TOAST */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--lime);color:#0e0d0b;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:700;z-index:300;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.section-title{font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;margin-top:4px;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-dim);}
+.empty-state-icon{font-size:40px;margin-bottom:10px;}
+.empty-state-text{font-size:14px;}
+
+.bmi-badge{display:inline-block;background:var(--lime);color:#0e0d0b;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px;margin-left:8px;}
+.streak-big{font-size:48px;font-weight:800;color:var(--lime);line-height:1;}
+.streak-label{font-size:12px;color:var(--text-muted);margin-top:4px;}
+
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;margin-top:8px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar{background:var(--lime);border-radius:4px 4px 0 0;width:100%;transition:height .4s ease;min-height:3px;}
+.bar-label{font-size:9px;color:var(--text-dim);text-align:center;}
+.bar-val{font-size:10px;font-weight:700;color:var(--text-muted);}
+
+/* select exercise for weight chart */
+.ex-select-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.ex-select-btn{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;font-size:11px;font-weight:600;cursor:pointer;text-align:center;color:var(--text-muted);transition:all .15s;}
+.ex-select-btn.active{background:var(--lime);color:#0e0d0b;border-color:var(--lime);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-title">FIT<span>7</span></div>
+    <div class="header-actions">
+      <div class="icon-btn" onclick="exportData()" title="匯出">💾</div>
+      <div class="icon-btn" onclick="document.getElementById('importFile').click()" title="匯入">📂</div>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+
+  <div class="content" id="mainContent">
+    <!-- pages injected here -->
+  </div>
+
+  <nav class="nav">
+    <div class="nav-btn active" onclick="showPage('workout')" id="nav-workout">
+      <div class="nav-icon">🏋️</div>
+      <div class="nav-label">課表</div>
+    </div>
+    <div class="nav-btn" onclick="showPage('log')" id="nav-log">
+      <div class="nav-icon">📋</div>
+      <div class="nav-label">日誌</div>
+    </div>
+    <div class="nav-btn" onclick="showPage('weights')" id="nav-weights">
+      <div class="nav-icon">📈</div>
+      <div class="nav-label">重量</div>
+    </div>
+    <div class="nav-btn" onclick="showPage('body')" id="nav-body">
+      <div class="nav-icon">⚖️</div>
+      <div class="nav-label">身體</div>
+    </div>
+    <div class="nav-btn" onclick="showPage('checkin')" id="nav-checkin">
+      <div class="nav-icon">📅</div>
+      <div class="nav-label">打卡</div>
+    </div>
+    <div class="nav-btn" onclick="showPage('stats')" id="nav-stats">
+      <div class="nav-icon">📊</div>
+      <div class="nav-label">統計</div>
+    </div>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="modal-overlay hidden" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+// ===== DATA =====
+const K = 'fit7:';
+const WORKOUTS = [
+  {
+    name: '臀腿後側＋有氧',
+    shortName: '臀腿',
+    exercises: [
+      {name:'RDL', sets:3, reps:12, weight:20},
+      {name:'臀推', sets:3, reps:15, weight:30},
+      {name:'腿後勾', sets:3, reps:12, weight:25},
+      {name:'外展機', sets:3, reps:15, weight:30},
+      {name:'死蟲式', sets:3, reps:10, weight:0},
+    ],
+    cardio: '有氧 15–25 分'
+  },
+  {
+    name: '上半身比例',
+    shortName: '上半身',
+    exercises: [
+      {name:'下拉', sets:3, reps:12, weight:30},
+      {name:'划船', sets:3, reps:12, weight:25},
+      {name:'胸推', sets:3, reps:12, weight:20},
+      {name:'側平舉', sets:3, reps:15, weight:6},
+      {name:'肩推', sets:3, reps:12, weight:10},
+      {name:'棒式', sets:3, reps:1, weight:0},
+    ],
+    cardio: '有氧 10–20 分'
+  },
+  {
+    name: '臀腿線條＋核心',
+    shortName: '線條',
+    exercises: [
+      {name:'保加利亞分腿蹲', sets:3, reps:10, weight:10},
+      {name:'臀橋', sets:3, reps:15, weight:20},
+      {name:'內收機', sets:3, reps:15, weight:30},
+      {name:'外展機', sets:3, reps:15, weight:30},
+      {name:'Pallof Press', sets:3, reps:12, weight:10},
+      {name:'側棒式', sets:3, reps:1, weight:0},
+    ],
+    cardio: '有氧 15–25 分'
+  },
+  {
+    name: '上半身補強＋長有氧',
+    shortName: '補強',
+    exercises: [
+      {name:'下拉/划船', sets:3, reps:12, weight:25},
+      {name:'胸推/飛鳥', sets:3, reps:12, weight:18},
+      {name:'側平舉', sets:3, reps:15, weight:6},
+      {name:'手臂訓練', sets:3, reps:12, weight:8},
+      {name:'核心訓練', sets:3, reps:10, weight:0},
+    ],
+    cardio: '有氧 25–35 分'
+  }
+];
+
+function s(key, val) {
+  if (val === undefined) {
+    try { return JSON.parse(localStorage.getItem(K+key)); } catch { return null; }
+  }
+  localStorage.setItem(K+key, JSON.stringify(val));
+}
+
+function gs(key, def) { const v = s(key); return v !== null ? v : def; }
+
+// State
+let currentPage = 'workout';
+let selectedWorkout = gs('selectedWorkout', 0);
+let workoutWeights = gs('workoutWeights', {});
+let workoutReps = gs('workoutReps', {});
+let workoutSession = gs('workoutSession', null); // active session
+let workoutLog = gs('workoutLog', []);
+let bodyLog = gs('bodyLog', []);
+let checkins = gs('checkins', []);
+let selectedWeightEx = null;
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let statPeriod = 'week';
+
+// ===== INIT WEIGHTS =====
+WORKOUTS.forEach((w, wi) => {
+  w.exercises.forEach((ex, ei) => {
+    const wk = `${wi}_${ei}`;
+    if (workoutWeights[wk] === undefined) workoutWeights[wk] = ex.weight;
+    if (workoutReps[wk] === undefined) workoutReps[wk] = {};
+    // init per-set reps
+    for (let s2 = 0; s2 < ex.sets; s2++) {
+      if (workoutReps[wk][s2] === undefined) workoutReps[wk][s2] = ex.reps;
+    }
+  });
+});
+s('workoutWeights', workoutWeights);
+s('workoutReps', workoutReps);
+
+// ===== PAGES =====
+function showPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-' + page).classList.add('active');
+  renderPage(page);
+}
+
+function renderPage(page) {
+  const c = document.getElementById('mainContent');
+  if (page === 'workout') c.innerHTML = renderWorkout();
+  else if (page === 'log') c.innerHTML = renderLog();
+  else if (page === 'weights') c.innerHTML = renderWeights();
+  else if (page === 'body') c.innerHTML = renderBody();
+  else if (page === 'checkin') c.innerHTML = renderCheckin();
+  else if (page === 'stats') c.innerHTML = renderStats();
+  afterRender(page);
+}
+
+// ===== WORKOUT PAGE =====
+function renderWorkout() {
+  const w = WORKOUTS[selectedWorkout];
+  const session = workoutSession;
+  const isActive = session && session.workoutIndex === selectedWorkout;
+
+  const tabs = WORKOUTS.map((wk, i) => `
+    <div class="workout-tab ${i===selectedWorkout?'active':''}" onclick="selectWorkout(${i})">
+      <div class="workout-tab-num">${i+1}</div>
+      <div class="workout-tab-label">${wk.shortName}</div>
+    </div>
+  `).join('');
+
+  const exercises = w.exercises.map((ex, ei) => {
+    const wk = `${selectedWorkout}_${ei}`;
+    const weight = workoutWeights[wk] || 0;
+    const repObj = workoutReps[wk] || {};
+    const isDone = isActive && session.done && session.done[ei];
+
+    const setsHtml = Array.from({length: ex.sets}, (_, si) => {
+      const repVal = repObj[si] !== undefined ? repObj[si] : ex.reps;
+      const setDone = isActive && session.setsDone && session.setsDone[ei] && session.setsDone[ei][si];
+      return `<div class="set-pill ${setDone?'done':''}" onclick="toggleSet(${ei},${si})">${si+1}組 ${repVal}次</div>`;
+    }).join('');
+
+    const repControls = Array.from({length: ex.sets}, (_, si) => {
+      const repVal = repObj[si] !== undefined ? repObj[si] : ex.reps;
+      return `<div style="display:flex;align-items:center;gap:4px;margin-right:6px;">
+        <span style="font-size:10px;color:var(--text-dim);">${si+1}:</span>
+        <div class="ctrl-btn" onclick="changeRep(${ei},${si},-1)">−</div>
+        <span class="ctrl-val" id="rep_${ei}_${si}" style="min-width:24px;font-size:13px;">${repVal}</span>
+        <div class="ctrl-btn" onclick="changeRep(${ei},${si},1)">+</div>
+      </div>`;
+    }).join('');
+
+    const isBodyweight = weight === 0 && ex.name.includes('棒') || ex.name.includes('死蟲') || ex.name.includes('側棒') || ex.name.includes('核心');
+
+    return `
+      <div class="exercise-item">
+        <div class="exercise-top">
+          <div class="exercise-name">${ex.name}</div>
+          <div class="exercise-check ${isDone?'done':''}" onclick="toggleExDone(${ei})">${isDone?'✓':''}</div>
+        </div>
+        <div class="exercise-controls">
+          <div class="control-group">
+            <span class="control-label">重量</span>
+            <div class="ctrl-btn" onclick="changeWeight(${ei},-2.5)">−</div>
+            <span class="ctrl-val" id="w_${ei}">${weight === 0 ? '自重' : weight+'kg'}</span>
+            <div class="ctrl-btn" onclick="changeWeight(${ei},2.5)">+</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;">
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;font-weight:600;">各組次數</div>
+          <div style="display:flex;flex-wrap:wrap;">${repControls}</div>
+        </div>
+        <div class="sets-row">${setsHtml}</div>
+      </div>
+    `;
+  }).join('');
+
+  const actionBtn = isActive
+    ? `<button class="finish-btn" onclick="finishWorkout()">✅ 完成訓練並記錄</button>`
+    : `<button class="start-btn" onclick="startWorkout()">🔥 開始訓練</button>`;
+
+  return `
+    <div class="workout-tabs">${tabs}</div>
+    <div class="card" style="margin-bottom:10px;padding:10px 14px;">
+      <div style="font-size:14px;font-weight:700;">${w.name}</div>
+    </div>
+    ${actionBtn}
+    ${exercises}
+    <div class="cardio-tag">
+      <div class="cardio-tag-icon">🏃</div>
+      <div class="cardio-tag-text">${w.cardio}</div>
+    </div>
+    ${isActive ? '' : ''}
+  `;
+}
+
+function selectWorkout(i) {
+  selectedWorkout = i;
+  s('selectedWorkout', i);
+  renderPage('workout');
+}
+
+function changeWeight(ei, delta) {
+  const wk = `${selectedWorkout}_${ei}`;
+  let w = workoutWeights[wk] || 0;
+  w = Math.max(0, +(w + delta).toFixed(1));
+  workoutWeights[wk] = w;
+  s('workoutWeights', workoutWeights);
+  const el = document.getElementById('w_' + ei);
+  if (el) el.textContent = w === 0 ? '自重' : w + 'kg';
+}
+
+function changeRep(ei, si, delta) {
+  const wk = `${selectedWorkout}_${ei}`;
+  if (!workoutReps[wk]) workoutReps[wk] = {};
+  let r = workoutReps[wk][si] || WORKOUTS[selectedWorkout].exercises[ei].reps;
+  r = Math.max(1, r + delta);
+  workoutReps[wk][si] = r;
+  s('workoutReps', workoutReps);
+  const el = document.getElementById(`rep_${ei}_${si}`);
+  if (el) el.textContent = r;
+  // update set pill
+  const pills = document.querySelectorAll('.sets-row');
+  if (pills[ei]) {
+    const pill = pills[ei].children[si];
+    if (pill) pill.textContent = `${si+1}組 ${r}次`;
+  }
+}
+
+function startWorkout() {
+  workoutSession = {
+    workoutIndex: selectedWorkout,
+    startTime: new Date().toISOString(),
+    done: {},
+    setsDone: {}
+  };
+  s('workoutSession', workoutSession);
+  renderPage('workout');
+  showToast('🔥 開始訓練！加油！');
+}
+
+function toggleSet(ei, si) {
+  if (!workoutSession) return;
+  if (!workoutSession.setsDone[ei]) workoutSession.setsDone[ei] = {};
+  workoutSession.setsDone[ei][si] = !workoutSession.setsDone[ei][si];
+  // check if all sets done
+  const totalSets = WORKOUTS[selectedWorkout].exercises[ei].sets;
+  let allDone = true;
+  for (let s2 = 0; s2 < totalSets; s2++) {
+    if (!workoutSession.setsDone[ei][s2]) { allDone = false; break; }
+  }
+  if (allDone) workoutSession.done[ei] = true;
+  else delete workoutSession.done[ei];
+  s('workoutSession', workoutSession);
+  renderPage('workout');
+}
+
+function toggleExDone(ei) {
+  if (!workoutSession) return;
+  workoutSession.done[ei] = !workoutSession.done[ei];
+  const totalSets = WORKOUTS[selectedWorkout].exercises[ei].sets;
+  if (!workoutSession.setsDone[ei]) workoutSession.setsDone[ei] = {};
+  for (let s2 = 0; s2 < totalSets; s2++) {
+    workoutSession.setsDone[ei][s2] = workoutSession.done[ei];
+  }
+  s('workoutSession', workoutSession);
+  renderPage('workout');
+}
+
+function finishWorkout() {
+  if (!workoutSession) return;
+  const w = WORKOUTS[selectedWorkout];
+  const snapshot = {
+    id: Date.now(),
+    workoutIndex: selectedWorkout,
+    workoutName: w.name,
+    time: new Date().toISOString(),
+    exercises: w.exercises.map((ex, ei) => {
+      const wk = `${selectedWorkout}_${ei}`;
+      return {
+        name: ex.name,
+        weight: workoutWeights[wk] || 0,
+        sets: ex.sets,
+        reps: Object.values(workoutReps[wk] || {})
+      };
+    })
+  };
+  workoutLog.unshift(snapshot);
+  s('workoutLog', workoutLog);
+
+  // auto checkin today
+  const today = todayStr();
+  if (!checkins.includes(today)) {
+    checkins.push(today);
+    s('checkins', checkins);
+  }
+
+  workoutSession = null;
+  s('workoutSession', null);
+  renderPage('workout');
+  showToast('🎉 訓練完成！已記錄');
+}
+
+// ===== LOG PAGE =====
+function renderLog() {
+  if (workoutLog.length === 0) {
+    return `<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">還沒有訓練記錄<br>完成一次訓練後會出現在這裡</div></div>`;
+  }
+  const items = workoutLog.map((log, i) => {
+    const dt = new Date(log.time);
+    const dateStr = `${dt.getFullYear()}/${dt.getMonth()+1}/${dt.getDate()} ${dt.getHours().toString().padStart(2,'0')}:${dt.getMinutes().toString().padStart(2,'0')}`;
+    const exRows = log.exercises.map(ex => {
+      const avgRep = ex.reps && ex.reps.length > 0 ? Math.round(ex.reps.reduce((a,b)=>a+b,0)/ex.reps.length) : '-';
+      const wStr = ex.weight === 0 ? '自重' : ex.weight + 'kg';
+      return `<div class="log-ex-row"><span class="log-ex-name">${ex.name}</span><span class="log-ex-val">${wStr} × ${ex.sets}×${avgRep}</span></div>`;
+    }).join('');
+    return `
+      <div class="log-item">
+        <div class="log-header">
+          <div>
+            <div class="log-type-badge">第${log.workoutIndex+1}次</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${log.workoutName}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <div class="log-time">${dateStr}</div>
+            <div class="delete-btn" onclick="deleteLog(${i})">🗑</div>
+          </div>
+        </div>
+        <div class="log-exercises">${exRows}</div>
+      </div>
+    `;
+  }).join('');
+  return items;
+}
+
+function deleteLog(i) {
+  showModal('刪除記錄', `確定要刪除這筆訓練記錄嗎？`, [
+    {label:'確定刪除', cls:'modal-btn-danger', action:`confirmDeleteLog(${i})`},
+    {label:'取消', cls:'modal-btn-cancel', action:'closeModalFn()'}
+  ]);
+}
+
+function confirmDeleteLog(i) {
+  workoutLog.splice(i, 1);
+  s('workoutLog', workoutLog);
+  closeModalFn();
+  renderPage('log');
+  showToast('已刪除');
+}
+
+// ===== WEIGHTS PAGE =====
+function getAllExercises() {
+  const all = [];
+  WORKOUTS.forEach((w, wi) => {
+    w.exercises.forEach((ex, ei) => {
+      if (!all.find(e => e.name === ex.name)) {
+        all.push({name: ex.name, wi, ei});
+      }
+    });
+  });
+  return all;
+}
+
+function getWeightHistory(exName) {
+  const history = [];
+  const logs = [...workoutLog].reverse();
+  logs.forEach(log => {
+    const ex = log.exercises.find(e => e.name === exName);
+    if (ex && ex.weight > 0) {
+      history.push({date: log.time, weight: ex.weight});
+    }
+  });
+  return history;
+}
+
+function renderWeights() {
+  const allEx = getAllExercises().filter(e => {
+    // check if has any weight history
+    return true;
+  });
+
+  if (!selectedWeightEx && allEx.length > 0) selectedWeightEx = allEx[0].name;
+
+  const selBtns = allEx.map(e => `
+    <div class="ex-select-btn ${selectedWeightEx===e.name?'active':''}" onclick="selectWeightEx('${e.name}')">${e.name}</div>
+  `).join('');
+
+  let chartArea = '';
+  let pbArea = '';
+
+  if (selectedWeightEx) {
+    const hist = getWeightHistory(selectedWeightEx);
+    if (hist.length >= 2) {
+      chartArea = `<canvas id="weightChart" class="chart"></canvas>`;
+    } else if (hist.length === 1) {
+      chartArea = `<div style="text-align:center;padding:30px 0;color:var(--text-muted);font-size:13px;">只有一筆數據，繼續訓練以看到趨勢！</div>`;
+    } else {
+      chartArea = `<div style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:13px;">尚無重量記錄</div>`;
+    }
+
+    if (hist.length > 0) {
+      const max = Math.max(...hist.map(h => h.weight));
+      const first = hist[0].weight;
+      const last = hist[hist.length-1].weight;
+      const diff = +(last - first).toFixed(1);
+      pbArea = `
+        <div class="card" style="margin-top:10px;">
+          <div class="card-header"><div class="card-title">進步數據</div></div>
+          <div class="pb-row"><span class="pb-name">個人最佳</span><span class="pb-val">${max}kg</span></div>
+          <div class="pb-row"><span class="pb-name">最新重量</span><span class="pb-val">${last}kg</span></div>
+          <div class="pb-row"><span class="pb-name">總進步幅度</span><span class="pb-val" style="color:${diff>=0?'var(--lime)':'var(--red)'}">${diff>=0?'+':''}${diff}kg</span></div>
+        </div>
+      `;
+    }
+  }
+
+  return `
+    <div class="section-title">選擇動作</div>
+    <div class="ex-select-grid">${selBtns}</div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">${selectedWeightEx || '-'} 重量趨勢</div></div>
+      <div class="chart-wrap">${chartArea}</div>
+    </div>
+    ${pbArea}
+  `;
+}
+
+function selectWeightEx(name) {
+  selectedWeightEx = name;
+  renderPage('weights');
+}
+
+function afterRender(page) {
+  if (page === 'weights' && selectedWeightEx) {
+    const hist = getWeightHistory(selectedWeightEx);
+    if (hist.length >= 2) {
+      drawLineChart('weightChart', hist.map(h => ({
+        label: formatShortDate(h.date),
+        value: h.weight
+      })), 'var(--lime)');
+    }
+  }
+  if (page === 'body') {
+    const logs = gs('bodyLog', []);
+    if (logs.length >= 2) {
+      const wData = logs.map(l => ({label: formatShortDate(l.date), value: l.weight}));
+      const fData = logs.map(l => ({label: formatShortDate(l.date), value: l.fat}));
+      const mData = logs.map(l => ({label: formatShortDate(l.date), value: l.muscle}));
+      drawLineChart('weightBodyChart', wData, '#5ca0ff');
+      drawLineChart('fatChart', fData, '#ffaa44');
+      drawLineChart('muscleChart', mData, 'var(--lime)');
+    }
+  }
+}
+
+// ===== BODY PAGE =====
+function renderBody() {
+  const logs = gs('bodyLog', []);
+  const latest = logs.length > 0 ? logs[logs.length-1] : null;
+
+  let bmi = '-';
+  let bmiLabel = '';
+  if (latest) {
+    const h = 1.49;
+    const b = +(latest.weight / (h*h)).toFixed(1);
+    bmi = b;
+    if (b < 18.5) bmiLabel = '過輕';
+    else if (b < 24) bmiLabel = '正常';
+    else if (b < 27) bmiLabel = '過重';
+    else bmiLabel = '肥胖';
+  }
+
+  const statsHtml = latest ? `
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-card-label">體重</div><div class="stat-card-val highlight">${latest.weight}<span class="stat-card-unit">kg</span></div></div>
+      <div class="stat-card"><div class="stat-card-label">體脂率</div><div class="stat-card-val highlight">${latest.fat}<span class="stat-card-unit">%</span></div></div>
+      <div class="stat-card"><div class="stat-card-label">肌肉量</div><div class="stat-card-val highlight">${latest.muscle}<span class="stat-card-unit">kg</span></div></div>
+      <div class="stat-card"><div class="stat-card-label">BMI</div><div class="stat-card-val highlight">${bmi}<span class="stat-card-unit"> ${bmiLabel}</span></div></div>
+    </div>
+  ` : '';
+
+  const chartsHtml = logs.length >= 2 ? `
+    <div class="card">
+      <div class="card-header"><div class="card-title">體重趨勢</div></div>
+      <div class="chart-wrap"><canvas id="weightBodyChart" class="chart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">體脂率趨勢</div></div>
+      <div class="chart-wrap"><canvas id="fatChart" class="chart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">肌肉量趨勢</div></div>
+      <div class="chart-wrap"><canvas id="muscleChart" class="chart"></canvas></div>
+    </div>
+  ` : '';
+
+  const logRows = [...logs].reverse().slice(0, 10).map(l => `
+    <div class="body-log-row">
+      <span class="body-log-date">${formatShortDate(l.date)}</span>
+      <span>${l.weight}kg</span>
+      <span style="color:var(--orange)">${l.fat}%</span>
+      <span style="color:var(--lime)">${l.muscle}kg</span>
+    </div>
+  `).join('');
+
+  return `
+    ${statsHtml}
+    <div class="card">
+      <div class="card-header"><div class="card-title">新增記錄</div></div>
+      <div class="body-input-row">
+        <div class="body-input-label">體重 (kg)</div>
+        <input class="body-input-field" type="number" id="inp_weight" step="0.1" placeholder="${latest ? latest.weight : '52.6'}">
+      </div>
+      <div class="body-input-row">
+        <div class="body-input-label">體脂率 (%)</div>
+        <input class="body-input-field" type="number" id="inp_fat" step="0.1" placeholder="${latest ? latest.fat : '32.4'}">
+      </div>
+      <div class="body-input-row">
+        <div class="body-input-label">肌肉量 (kg)</div>
+        <input class="body-input-field" type="number" id="inp_muscle" step="0.1" placeholder="${latest ? latest.muscle : '33.6'}">
+      </div>
+      <button class="add-body-btn" onclick="addBodyLog()">記錄身體數據</button>
+    </div>
+    ${chartsHtml}
+    ${logRows ? `<div class="card"><div class="card-header"><div class="card-title">歷史記錄</div></div>${logRows}</div>` : ''}
+  `;
+}
+
+function addBodyLog() {
+  const w = parseFloat(document.getElementById('inp_weight').value);
+  const f = parseFloat(document.getElementById('inp_fat').value);
+  const m = parseFloat(document.getElementById('inp_muscle').value);
+  if (isNaN(w) && isNaN(f) && isNaN(m)) { showToast('⚠️ 請填入數據'); return; }
+  const logs = gs('bodyLog', []);
+  const latest = logs.length > 0 ? logs[logs.length-1] : null;
+  logs.push({
+    date: new Date().toISOString(),
+    weight: isNaN(w) ? (latest ? latest.weight : 0) : w,
+    fat: isNaN(f) ? (latest ? latest.fat : 0) : f,
+    muscle: isNaN(m) ? (latest ? latest.muscle : 0) : m
+  });
+  s('bodyLog', logs);
+  bodyLog = logs;
+  renderPage('body');
+  showToast('✅ 身體數據已記錄');
+}
+
+// ===== CHECKIN PAGE =====
+function renderCheckin() {
+  const now = new Date(calYear, calMonth, 1);
+  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const firstDow = new Date(calYear, calMonth, 1).getDay();
+
+  const dows = ['日','一','二','三','四','五','六'].map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  let days = '';
+  // blanks before
+  for (let i = 0; i < firstDow; i++) days += `<div class="cal-day other"></div>`;
+  const today = new Date();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+    const isChecked = checkins.includes(dateStr);
+    days += `<div class="cal-day ${isToday?'today':''} ${isChecked?'checked':''}" onclick="toggleCheckin('${dateStr}')">${d}</div>`;
+  }
+
+  // 6-month bar chart
+  const months6 = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const yr = d.getFullYear();
+    const mo = d.getMonth();
+    const count = checkins.filter(c => {
+      const cd = new Date(c);
+      return cd.getFullYear() === yr && cd.getMonth() === mo;
+    }).length;
+    months6.push({label: (mo+1)+'月', count});
+  }
+  const maxCount = Math.max(...months6.map(m => m.count), 1);
+  const bars = months6.map(m => `
+    <div class="bar-col">
+      <div class="bar-val">${m.count}</div>
+      <div class="bar" style="height:${Math.round((m.count/maxCount)*60)+4}px"></div>
+      <div class="bar-label">${m.label}</div>
+    </div>
+  `).join('');
+
+  const streak = calcStreak();
+  const total = checkins.length;
+
+  return `
+    <div class="stat-grid" style="margin-bottom:10px;">
+      <div class="stat-card" style="text-align:center;">
+        <div class="stat-card-label">連續打卡</div>
+        <div class="streak-big">${streak}</div>
+        <div class="streak-label">天</div>
+      </div>
+      <div class="stat-card" style="text-align:center;">
+        <div class="stat-card-label">總打卡次數</div>
+        <div class="streak-big">${total}</div>
+        <div class="streak-label">次</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="cal-header">
+        <div class="cal-month">${calYear}年 ${monthNames[calMonth]}</div>
+        <div class="cal-nav">
+          <div class="cal-nav-btn" onclick="changeCalMonth(-1)">‹</div>
+          <div class="cal-nav-btn" onclick="changeCalMonth(1)">›</div>
+        </div>
+      </div>
+      <div class="cal-grid">${dows}${days}</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">近6個月</div></div>
+      <div class="bar-chart">${bars}</div>
+    </div>
+  `;
+}
+
+function toggleCheckin(dateStr) {
+  const idx = checkins.indexOf(dateStr);
+  if (idx >= 0) checkins.splice(idx, 1);
+  else checkins.push(dateStr);
+  s('checkins', checkins);
+  renderPage('checkin');
+}
+
+function changeCalMonth(delta) {
+  calMonth += delta;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderPage('checkin');
+}
+
+function calcStreak() {
+  if (checkins.length === 0) return 0;
+  const sorted = [...checkins].sort().reverse();
+  const today = todayStr();
+  let streak = 0;
+  let cur = new Date();
+  // check if today or yesterday is in checkins
+  if (sorted[0] !== today && sorted[0] !== yesterdayStr()) return 0;
+  for (let i = 0; i < 365; i++) {
+    const d = dateStr(cur);
+    if (checkins.includes(d)) { streak++; cur.setDate(cur.getDate()-1); }
+    else break;
+  }
+  return streak;
+}
+
+// ===== STATS PAGE =====
+function renderStats() {
+  const now = new Date();
+  let filtered;
+  if (statPeriod === 'week') {
+    const week = new Date(now); week.setDate(now.getDate()-6);
+    filtered = workoutLog.filter(l => new Date(l.time) >= week);
+  } else {
+    const month = new Date(now); month.setDate(1); month.setHours(0,0,0,0);
+    filtered = workoutLog.filter(l => new Date(l.time) >= month);
+  }
+
+  const streak = calcStreak();
+  const total = checkins.length;
+  const typeCount = [0,0,0,0];
+  workoutLog.forEach(l => { if (l.workoutIndex >= 0 && l.workoutIndex < 4) typeCount[l.workoutIndex]++; });
+
+  // goal: 3 times/week, target body fat 25%
+  const latestBody = bodyLog.length > 0 ? bodyLog[bodyLog.length-1] : null;
+  const fatGoal = 25;
+  const fatStart = 32.4;
+  let fatProgress = 0;
+  if (latestBody) {
+    const current = latestBody.fat;
+    fatProgress = Math.min(100, Math.round(((fatStart - current) / (fatStart - fatGoal)) * 100));
+  }
+
+  const periodTabs = `
+    <div class="period-tabs">
+      <div class="period-tab ${statPeriod==='week'?'active':''}" onclick="setStatPeriod('week')">本週</div>
+      <div class="period-tab ${statPeriod==='month'?'active':''}" onclick="setStatPeriod('month')">本月</div>
+    </div>
+  `;
+
+  const typeLabels = WORKOUTS.map((w,i) => `
+    <div class="pb-row">
+      <span class="pb-name">第${i+1}次 ${w.shortName}</span>
+      <span class="pb-val">${typeCount[i]}次</span>
+    </div>
+  `).join('');
+
+  return `
+    ${periodTabs}
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-card-label">${statPeriod==='week'?'本週':'本月'}訓練</div><div class="stat-card-val highlight">${filtered.length}<span class="stat-card-unit">次</span></div></div>
+      <div class="stat-card"><div class="stat-card-label">連續打卡</div><div class="stat-card-val highlight">${streak}<span class="stat-card-unit">天</span></div></div>
+      <div class="stat-card"><div class="stat-card-label">總訓練次數</div><div class="stat-card-val highlight">${workoutLog.length}<span class="stat-card-unit">次</span></div></div>
+      <div class="stat-card"><div class="stat-card-label">總打卡</div><div class="stat-card-val highlight">${total}<span class="stat-card-unit">天</span></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">降體脂目標進度</div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:6px;">
+        <span>起始 ${fatStart}%</span>
+        <span>${latestBody ? '現在 '+latestBody.fat+'%' : '請記錄身體數據'}</span>
+        <span>目標 ${fatGoal}%</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:${fatProgress}%"></div></div>
+      <div style="text-align:right;font-size:12px;color:var(--lime);margin-top:4px;font-weight:700;">${fatProgress}%</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">各類型訓練次數</div></div>
+      ${typeLabels}
+    </div>
+  `;
+}
+
+function setStatPeriod(p) {
+  statPeriod = p;
+  renderPage('stats');
+}
+
+// ===== CHARTS =====
+function drawLineChart(canvasId, data, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || data.length < 2) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth || 360;
+  const H = 160;
+  canvas.width = W * window.devicePixelRatio;
+  canvas.height = H * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+  const pad = {top: 20, right: 16, bottom: 30, left: 36};
+  const vals = data.map(d => d.value);
+  const minV = Math.min(...vals);
+  const maxV = Math.max(...vals);
+  const rangeV = maxV - minV || 1;
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  function px(i) { return pad.left + (i / (data.length-1)) * cw; }
+  function py(v) { return pad.top + ch - ((v - minV) / rangeV) * ch; }
+
+  // grid
+  ctx.strokeStyle = '#2e2b26';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = pad.top + (ch / 3) * i;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cw, y); ctx.stroke();
+  }
+
+  // gradient fill
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + ch);
+  grad.addColorStop(0, color + '44');
+  grad.addColorStop(1, color + '00');
+  ctx.beginPath();
+  ctx.moveTo(px(0), py(vals[0]));
+  for (let i = 1; i < data.length; i++) ctx.lineTo(px(i), py(vals[i]));
+  ctx.lineTo(px(data.length-1), H - pad.bottom);
+  ctx.lineTo(px(0), H - pad.bottom);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // line
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.moveTo(px(0), py(vals[0]));
+  for (let i = 1; i < data.length; i++) ctx.lineTo(px(i), py(vals[i]));
+  ctx.stroke();
+
+  // dots
+  data.forEach((d, i) => {
+    ctx.beginPath();
+    ctx.arc(px(i), py(d.value), 3.5, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  });
+
+  // labels
+  ctx.fillStyle = '#5a5550';
+  ctx.font = `${10 * window.devicePixelRatio}px Plus Jakarta Sans`;
+  ctx.textAlign = 'center';
+  ctx.scale(1/window.devicePixelRatio, 1/window.devicePixelRatio);
+  const showEvery = Math.ceil(data.length / 5);
+  data.forEach((d, i) => {
+    if (i % showEvery === 0 || i === data.length-1) {
+      ctx.fillText(d.label, px(i) * window.devicePixelRatio, (H - pad.bottom + 16) * window.devicePixelRatio);
+    }
+  });
+  // y-axis labels
+  ctx.textAlign = 'right';
+  [minV, maxV].forEach(v => {
+    ctx.fillText(v.toString(), (pad.left - 4) * window.devicePixelRatio, py(v) * window.devicePixelRatio + 4);
+  });
+}
+
+// ===== HELPERS =====
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function yesterdayStr() {
+  const d = new Date(); d.setDate(d.getDate()-1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function dateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatShortDate(iso) {
+  const d = new Date(iso);
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function showModal(title, body, btns) {
+  const m = document.getElementById('modal');
+  m.innerHTML = `<div class="modal-title">${title}</div><p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">${body}</p>` +
+    btns.map(b => `<button class="modal-btn ${b.cls}" onclick="${b.action}">${b.label}</button>`).join('');
+  document.getElementById('modalOverlay').classList.remove('hidden');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalFn();
+}
+function closeModalFn() {
+  document.getElementById('modalOverlay').classList.add('hidden');
+}
+window.closeModalFn = closeModalFn;
+window.confirmDeleteLog = confirmDeleteLog;
+
+// ===== BACKUP =====
+function exportData() {
+  const data = {
+    version: 1,
+    exportTime: new Date().toISOString(),
+    workoutWeights, workoutReps, workoutLog,
+    bodyLog: gs('bodyLog', []),
+    checkins,
+    selectedWorkout
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fit7_backup_${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('💾 已匯出備份');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.workoutWeights) { workoutWeights = data.workoutWeights; s('workoutWeights', workoutWeights); }
+      if (data.workoutReps) { workoutReps = data.workoutReps; s('workoutReps', workoutReps); }
+      if (data.workoutLog) { workoutLog = data.workoutLog; s('workoutLog', workoutLog); }
+      if (data.bodyLog) { s('bodyLog', data.bodyLog); bodyLog = data.bodyLog; }
+      if (data.checkins) { checkins = data.checkins; s('checkins', checkins); }
+      if (data.selectedWorkout !== undefined) { selectedWorkout = data.selectedWorkout; s('selectedWorkout', selectedWorkout); }
+      renderPage(currentPage);
+      showToast('📂 匯入成功！');
+    } catch(err) {
+      showToast('⚠️ 匯入失敗：格式錯誤');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ===== INIT =====
+showPage('workout');
+</script>
+</body>
+</html>
